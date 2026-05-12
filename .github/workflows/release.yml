@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version tag (e.g. v0.1.0). Must not already exist.'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Resolve version tag
+        id: ver
+        shell: pwsh
+        run: |
+          if ('${{ github.event_name }}' -eq 'workflow_dispatch') {
+            $tag = '${{ github.event.inputs.tag }}'
+          } else {
+            $tag = '${{ github.ref_name }}'
+          }
+          if ($tag -notmatch '^v\d+\.\d+\.\d+') {
+            throw "Tag '$tag' does not match v<major>.<minor>.<patch>"
+          }
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+          Write-Host "Tag: $tag"
+
+      - name: Publish (single-file, trimmed)
+        run: dotnet publish --configuration Release --runtime win-x64 -p:PublishAot=false
+
+      - name: Stage artifact
+        id: stage
+        shell: pwsh
+        run: |
+          $src = "bin/Release/net9.0-windows10.0.19041.0/win-x64/publish/BareRecord.exe"
+          if (-not (Test-Path $src)) { throw "Published exe not found at $src" }
+          $dest = "BareRecord-${{ steps.ver.outputs.tag }}-win-x64.exe"
+          Copy-Item $src $dest
+          $size = '{0:N1} MB' -f ((Get-Item $dest).Length / 1MB)
+          Write-Host "$dest ($size)"
+          echo "asset=$dest" >> $env:GITHUB_OUTPUT
+          echo "size=$size" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          gh release create '${{ steps.ver.outputs.tag }}' '${{ steps.stage.outputs.asset }}' `
+            --title 'BareRecord ${{ steps.ver.outputs.tag }}' `
+            --generate-notes

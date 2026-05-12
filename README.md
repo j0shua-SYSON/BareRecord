@@ -8,10 +8,6 @@ A native Windows screen recorder. One self-contained executable. No installer, n
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 
-<p align="center">
-  <img src="docs/screenshot.png" alt="BareRecord application window showing the record button, source selector, audio toggles, options, and save location" width="640">
-</p>
-
 ## Overview
 
 BareRecord captures the screen to an MP4 (H.264 video, AAC audio) using only the Windows APIs that ship with the operating system. The published binary is a single executable of approximately 16 MB; no .NET runtime needs to be installed on the target machine.

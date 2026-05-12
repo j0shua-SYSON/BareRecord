@@ -21,7 +21,7 @@ internal sealed partial class MainWindow : Form
     private Label _lblStatus;
     private Button _btnRecord;
     private Button _btnPause;
-    private RadioButton _radPrimary, _radWindow, _radRegion;
+    private RadioButton _radPrimary, _radWindow;
     private CheckBox _chkSystem, _chkMic;
     private CheckBox _chkCountdown;
     private NumericUpDown _numAutoStop;
@@ -105,7 +105,6 @@ internal sealed partial class MainWindow : Form
         y += 30;
         _radPrimary = CreateRadio("Primary monitor", margin, y);
         _radWindow = CreateRadio("Window", margin + 160, y);
-        _radRegion = CreateRadio("Region", margin + 280, y);
         y += 45;
 
         // Audio
@@ -200,7 +199,6 @@ internal sealed partial class MainWindow : Form
         try
         {
             if (_settings.Source == "Window") _radWindow.Checked = true;
-            else if (_settings.Source == "Region") _radRegion.Checked = true;
             else _radPrimary.Checked = true;
 
             _chkSystem.Checked = _settings.AudioSystem;
@@ -219,7 +217,6 @@ internal sealed partial class MainWindow : Form
         if (_loadingSettings) return;
 
         if (_radWindow.Checked) _settings.Source = "Window";
-        else if (_radRegion.Checked) _settings.Source = "Region";
         else _settings.Source = "Primary";
 
         _settings.AudioSystem = _chkSystem.Checked;
@@ -327,7 +324,7 @@ internal sealed partial class MainWindow : Form
         try { Directory.CreateDirectory(folder); }
         catch (Exception ex) { SetStatus("Can't write to folder: " + ex.Message, true); return; }
 
-        var sourceLabel = _radWindow.Checked ? "Window" : _radRegion.Checked ? "Region" : "Primary";
+        var sourceLabel = _radWindow.Checked ? "Window" : "Primary";
         var baseName    = _settings.BuildFileName(DateTime.Now, sourceLabel);
         var outputPath  = Path.Combine(folder, baseName + ".mp4");
         _settings.Save();   // persist incremented Counter
@@ -411,7 +408,7 @@ internal sealed partial class MainWindow : Form
         bool saved = next == AppState.Saved;
 
         bool settingsEnabled = idle || saved;
-        _radPrimary.Enabled = _radWindow.Enabled = _radRegion.Enabled = settingsEnabled;
+        _radPrimary.Enabled = _radWindow.Enabled = settingsEnabled;
         _chkSystem.Enabled = _chkMic.Enabled = settingsEnabled;
         _btnChangeFolder.Enabled = settingsEnabled;
 

@@ -1,0 +1,109 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <RootNamespace>BareRecord</RootNamespace>
+    <AssemblyName>BareRecord</AssemblyName>
+    <UseWPF>false</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <_SuppressWinFormsTrimError>true</_SuppressWinFormsTrimError>
+    <CsWinRTIncludes>Windows.Graphics.Capture;Windows.Graphics.DirectX;Windows.Graphics.DirectX.Direct3D11</CsWinRTIncludes>
+    <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
+    <CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
+  </PropertyGroup>
+
+  <!--
+    Default build mode is Native AOT (smallest binary, no .NET runtime, no JIT).
+    Requires Visual Studio's "Desktop development with C++" workload installed
+    so the MSVC linker (link.exe) is on PATH.
+
+    If the linker isn't available, fall back to single-file + full trimming:
+      dotnet publish -c Release -r win-x64 -p:PublishAot=false ^
+                     -p:PublishSingleFile=true -p:PublishTrimmed=true ^
+                     -p:EnableCompressionInSingleFile=true
+  -->
+  <PropertyGroup>
+    <PublishAot>true</PublishAot>
+    <SelfContained>true</SelfContained>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <DebuggerSupport>false</DebuggerSupport>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <StackTraceSupport>false</StackTraceSupport>
+    <EventSourceSupport>false</EventSourceSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <UseNativeHttpHandler>false</UseNativeHttpHandler>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+    <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
+    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+    <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <TrimMode>full</TrimMode>
+  </PropertyGroup>
+
+  <!-- Non-AOT fallback: trim + single-file + brotli compression. -->
+  <PropertyGroup Condition="'$(PublishAot)' == 'false'">
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <!--
+    Strip native runtime files we don't need: PDB symbol reading, debugger
+    DAC/COM, the out-of-proc crash dumper, ETW localization resources, and
+    HTTP/3 (we don't make HTTP requests). These are bundled into the single
+    file and inflate the .exe by ~7 MB unpacked / ~3-4 MB compressed.
+    Removing them costs nothing for an end-user app — the runtime only
+    consults them when a debugger attaches or a crash dump is requested.
+  -->
+  <Target Name="_StripUnneededRuntimeFiles"
+          AfterTargets="ComputeFilesToPublish;_ComputeFilesToBundle"
+          BeforeTargets="GenerateSingleFileBundle"
+          Condition="'$(PublishAot)' == 'false'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+        Condition="
+          '%(FileName)%(Extension)' == 'Microsoft.DiaSymReader.Native.amd64.dll' OR
+          '%(FileName)%(Extension)' == 'mscordbi.dll' OR
+          '%(FileName)%(Extension)' == 'msquic.dll' OR
+          '%(FileName)%(Extension)' == 'clretwrc.dll' OR
+          '%(FileName)%(Extension)' == 'createdump.exe' OR
+          $([System.String]::Copy('%(FileName)').StartsWith('mscordaccore'))
+        " />
+      <_FilesToBundle Remove="@(_FilesToBundle)"
+        Condition="
+          '%(FileName)%(Extension)' == 'Microsoft.DiaSymReader.Native.amd64.dll' OR
+          '%(FileName)%(Extension)' == 'mscordbi.dll' OR
+          '%(FileName)%(Extension)' == 'msquic.dll' OR
+          '%(FileName)%(Extension)' == 'clretwrc.dll' OR
+          '%(FileName)%(Extension)' == 'createdump.exe' OR
+          $([System.String]::Copy('%(FileName)').StartsWith('mscordaccore'))
+        " />
+      <!-- Also delete from the publish dir in case anything walks it. -->
+      <_BareRecordDelete Include="$(PublishDir)Microsoft.DiaSymReader.Native.amd64.dll" />
+      <_BareRecordDelete Include="$(PublishDir)mscordbi.dll" />
+      <_BareRecordDelete Include="$(PublishDir)msquic.dll" />
+      <_BareRecordDelete Include="$(PublishDir)clretwrc.dll" />
+      <_BareRecordDelete Include="$(PublishDir)createdump.exe" />
+      <_BareRecordDelete Include="$(PublishDir)mscordaccore*.dll" />
+    </ItemGroup>
+    <Delete Files="@(_BareRecordDelete)" ContinueOnError="true" />
+    <Message Importance="high" Text="[BareRecord] Stripped diagnostic/HTTP runtime native libs." />
+  </Target>
+
+</Project>

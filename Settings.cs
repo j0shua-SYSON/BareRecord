@@ -14,7 +14,7 @@ namespace BareRecord;
 /// </summary>
 internal sealed class Settings
 {
-    public string Source        { get; set; } = "Primary";   // Primary | Window | Region
+    public string Source        { get; set; } = "Primary";   // Primary | Window
     public bool   AudioSystem   { get; set; } = true;
     public bool   AudioMic      { get; set; } = false;
     public string OutputFolder  { get; set; } = DefaultOutputFolder();

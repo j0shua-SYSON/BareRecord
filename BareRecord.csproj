@@ -16,6 +16,7 @@
     <AssemblyName>BareRecord</AssemblyName>
     <UseWPF>false</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <_SuppressWinFormsTrimError>true</_SuppressWinFormsTrimError>
     <CsWinRTIncludes>Windows.Graphics.Capture;Windows.Graphics.DirectX;Windows.Graphics.DirectX.Direct3D11</CsWinRTIncludes>
     <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>

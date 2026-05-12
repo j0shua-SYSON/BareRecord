@@ -6,7 +6,7 @@ A native Windows screen recorder. One self-contained executable. No installer, n
 [![Release](https://github.com/j0shua-SYSON/BareRecord/actions/workflows/release.yml/badge.svg)](https://github.com/j0shua-SYSON/BareRecord/actions/workflows/release.yml)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 
 ## Overview
 
@@ -229,4 +229,19 @@ The release workflow can also be invoked manually from the Actions tab.
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Released under the [GNU General Public License v3.0](LICENSE).
+
+```
+BareRecord -- a native Windows screen recorder.
+Copyright (C) 2026 j0shua-SYSON
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+```

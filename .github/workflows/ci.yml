@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.github/**'
+      - '!.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (windows-x64)
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore /warnaserror
+
+      - name: Publish (single-file, trimmed)
+        run: dotnet publish --configuration Release --runtime win-x64 -p:PublishAot=false --no-restore
+
+      - name: Verify artifact
+        shell: pwsh
+        run: |
+          $exe = "bin/Release/net9.0-windows10.0.19041.0/win-x64/publish/BareRecord.exe"
+          if (-not (Test-Path $exe)) { throw "Published exe not found at $exe" }
+          $size = (Get-Item $exe).Length
+          Write-Host "Published binary: $exe ($size bytes)"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BareRecord-${{ github.sha }}
+          path: bin/Release/net9.0-windows10.0.19041.0/win-x64/publish/BareRecord.exe
+          if-no-files-found: error
+          retention-days: 14

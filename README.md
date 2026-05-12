@@ -1,56 +1,53 @@
-<div align="center">
-
-<img src="icon.ico" alt="BareRecord" width="96" height="96" />
-
 # BareRecord
 
-**A small, fast, native Windows screen recorder. No bloat.**
+A native Windows screen recorder. One self-contained executable. No installer, no runtime dependencies, no telemetry.
 
+[![CI](https://github.com/j0shua-SYSON/BareRecord/actions/workflows/ci.yml/badge.svg)](https://github.com/j0shua-SYSON/BareRecord/actions/workflows/ci.yml)
+[![Release](https://github.com/j0shua-SYSON/BareRecord/actions/workflows/release.yml/badge.svg)](https://github.com/j0shua-SYSON/BareRecord/actions/workflows/release.yml)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![Single file](https://img.shields.io/badge/binary-~16MB-success)](#build)
-[![License](https://img.shields.io/badge/license-MIT-blue)](#license)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-One `.exe`. No installer. No login. No cloud. No telemetry. No AI nonsense.
+## Overview
 
-</div>
+BareRecord captures the screen to an MP4 (H.264 video, AAC audio) using only the Windows APIs that ship with the operating system. The published binary is a single executable of approximately 16 MB; no .NET runtime needs to be installed on the target machine.
 
----
+The project's design constraint is minimalism. The application starts, records, and stays out of the way.
 
-## What it does
+## Features
 
-Records your screen to MP4 (H.264 + AAC) and stays out of the way.
+- Primary monitor and window capture, the latter via the system Graphics Capture picker
+- System audio loopback and microphone capture, individually or mixed
+- Pause and resume with continuous-timestamp output (no double-speed segment on resume)
+- Configurable auto-stop timer
+- Optional three-second countdown overlay before recording starts
+- Global hotkey (`Ctrl+Alt+R`) usable while the application is minimized to the system tray
+- Filename templates with date, source, and counter tokens
+- System-tray integration with click-to-restore and balloon notifications
+- Settings persisted to `%LOCALAPPDATA%\BareRecord\settings.json`
 
-| | |
-|---|---|
-| 🎥 **Capture** | Primary monitor, or any window via the system picker |
-| 🔊 **Audio** | System audio loopback, microphone, or both mixed |
-| ⏯ **Controls** | Pause / resume, auto-stop timer, global hotkey (`Ctrl+Alt+R`) |
-| ⏳ **Countdown** | Optional 3-2-1 overlay before recording starts |
-| 📁 **Output** | Configurable folder + filename template with `{yyyy}{MM}{dd}{HH}{mm}{ss}{counter}{source}` tokens |
-| 🪟 **Tray** | Minimizes to tray while recording — your window doesn't appear in the capture |
-| 🔔 **Toasts** | Quiet balloon notifications on start / save (click to open the file) |
-| ⚙️ **Settings** | Persisted to `%LOCALAPPDATA%\BareRecord\settings.json` — survives across launches |
+## Non-features
 
-## What it deliberately doesn't do
+The following are intentionally omitted:
 
-> The goal is a recorder that opens, records, and gets out of the way. So no:
+- Artificial intelligence features
+- Cloud upload, sync, or account requirements
+- A built-in video editor
+- Effect or template marketplaces
+- Auto-update prompts
+- Telemetry or analytics
 
-❌ AI features &nbsp; ❌ Cloud uploads &nbsp; ❌ Accounts &nbsp; ❌ Built-in editor &nbsp; ❌ Effects marketplace &nbsp; ❌ Auto-update nag screens &nbsp; ❌ Telemetry
+If a full non-linear editor or a hosted service is required, BareRecord is not the right tool.
 
-If you need a NLE, use a NLE. BareRecord just records.
+## Installation
 
----
+### Download a release
 
-## Install
+Prebuilt binaries are available on the [Releases](../../releases) page. Download `BareRecord-vX.Y.Z-win-x64.exe` and run it. The application writes its configuration to `%LOCALAPPDATA%\BareRecord\` and does not modify the registry or install services.
 
-### Option A — grab the binary
+The binary is not currently code-signed; Windows SmartScreen may display a warning on first launch.
 
-Head to the [Releases](../../releases) page and download `BareRecord.exe`. That's the entire app — drop it anywhere and run it. It writes its settings to `%LOCALAPPDATA%\BareRecord\` and nothing else.
-
-> **Why is the SmartScreen warning showing?** Because the binary isn't code-signed (signing costs money for a side project). Click "More info" → "Run anyway".
-
-### Option B — build from source
+### Build from source
 
 ```powershell
 git clone https://github.com/j0shua-SYSON/BareRecord.git
@@ -58,119 +55,117 @@ cd BareRecord
 dotnet publish -c Release -r win-x64 -p:PublishAot=false
 ```
 
-Output: `bin\Release\net9.0-windows10.0.19041.0\win-x64\publish\BareRecord.exe` (~16 MB, fully self-contained).
+The resulting binary is at:
 
-**For the smallest possible binary** (~6 MB Native AOT), install Visual Studio's "Desktop development with C++" workload and drop the `-p:PublishAot=false` flag.
+```
+bin\Release\net9.0-windows10.0.19041.0\win-x64\publish\BareRecord.exe
+```
 
----
+For a smaller binary (approximately 6 MB) using Native AOT, install Visual Studio 2022 with the "Desktop development with C++" workload, then omit the `-p:PublishAot=false` flag.
 
 ## Usage
 
-| Action | How |
+| Action | Method |
 |---|---|
-| Start / stop recording | Click the big red button, or press `Ctrl+Alt+R` from anywhere |
-| Pause / resume | Click "Pause" while recording (frames + audio drop, timeline stays continuous — no double-speed segment) |
-| Pick a window | Choose "Window" in Source, then pick from the system picker |
-| Set auto-stop | "Auto-stop after N sec" in Options (0 = off) |
-| Show recording in folder | Right-click the tray icon → Show, or click the "Open Folder" button after saving |
+| Start or stop recording | Click the record button, or press `Ctrl+Alt+R` from any application |
+| Pause or resume | Click the Pause button while recording |
+| Capture a specific window | Set Source to *Window*, then choose the target window in the system picker |
+| Configure auto-stop | Set the *Auto-stop after* value in the Options section (0 disables) |
+| Open the saved recording | Click *Open File* or *Open Folder* after saving, or click the toast notification |
 
-Settings persist automatically. Restart the app and your last source/audio/output choices are still there.
-
----
-
-## Architecture
-
-BareRecord is intentionally a single small binary — most of its size is the trimmed WinForms surface, not application code.
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  UI/MainWindow.cs                   WinForms shell, state machine│
-│    └─ MainWindow.Tray.cs            NotifyIcon, balloon toasts   │
-│    └─ CountdownOverlay.cs           Click-through 3-2-1 overlay  │
-├─────────────────────────────────────────────────────────────────┤
-│  Recording/RecordingSession.cs      Capture pump → encoder       │
-│  ┌──────────────┬──────────────┬────────────────────────────────┐│
-│  │ Capture/     │ Audio/       │ Encoding/                      ││
-│  │ D3D11        │ WasapiLoop-  │ MediaSinkWriter (H.264 + AAC)  ││
-│  │ + WGC item   │ back + mic   │ via Media Foundation           ││
-│  │ factory      │ + ring mix   │                                ││
-│  └──────────────┴──────────────┴────────────────────────────────┘│
-├─────────────────────────────────────────────────────────────────┤
-│  Settings.cs       JSON, source-gen for AOT, token-expanded names│
-│  Hotkeys/          Global Ctrl+Alt+R via RegisterHotKey          │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Why the choices
-
-- **WinForms over WPF** — same `~16 MB` trimmed footprint as raw Win32, but with built-in `NotifyIcon`, `ToolTip`, `NumericUpDown`, and `FolderBrowserDialog` so we don't reinvent them.
-- **Hand-rolled COM via vtable function pointers** — declaring 5 D3D11 + 10 Media Foundation methods by vtable index is shorter than pulling in Vortice or NAudio, and keeps the dependency graph small.
-- **Windows.Graphics.Capture for video** — DPI-aware, hardware-backed, handles fullscreen exclusive apps gracefully.
-- **WASAPI loopback for system audio** — captures whatever's playing on the default render endpoint without a virtual cable. A second WASAPI client on the capture endpoint handles the mic; the two streams are mixed at write-time on the system audio's cadence (with a ring buffer to absorb mic jitter).
-- **Media Foundation Sink Writer for muxing** — H.264 + AAC into MP4, hardware-accelerated encoder when one is available.
-- **Source-gen JSON** — `System.Text.Json` reflection-free, so the app stays compatible with full trimming and Native AOT.
-
-### The hard bits
-
-- **Pause/resume timestamp stitching.** During a pause, frames and audio packets are dropped; on resume, video timestamps are shifted back by the cumulative paused duration so the MP4 has continuous timing with no double-speed segment. Audio stays in sync because the byte counter that drives audio timestamps doesn't tick while paused.
-- **D3D11 multithread protection.** WGC fires frames on its own thread and the encoder MFT may touch the device context concurrently with our staging-copy. `ID3D11Multithread::SetMultithreadProtected(TRUE)` is non-negotiable here.
-- **Countdown overlay.** Full-screen click-through (`WS_EX_TRANSPARENT`) with a magenta transparency key. The visible pill has to be drawn with fully opaque colors — semi-transparent fills blend with the magenta and render as dark purple instead of being keyed out.
-
----
+Settings are persisted automatically on change.
 
 ## Requirements
 
-- **Windows 10 1903 (build 18362)** or newer, x64 — required for Windows.Graphics.Capture
-- **GPU with D3D11 feature level 10.0+** — almost any GPU from the last decade
-- **No .NET runtime install needed** — the published binary is self-contained
+- Windows 10 version 1903 (build 18362) or newer, 64-bit
+- A GPU supporting Direct3D 11 feature level 10.0 or higher
 
----
+The published binary is self-contained; no additional runtime installation is required.
+
+## Architecture
+
+The application is organized around a single `RecordingSession` that coordinates three independent capture sources and one Media Foundation sink writer.
+
+```
++--------------------------------------------------------------------+
+|  UI/MainWindow.cs                  WinForms shell, state machine    |
+|    +- MainWindow.Tray.cs           NotifyIcon, balloon notifications|
+|    +- CountdownOverlay.cs          Click-through 3-2-1 overlay      |
++--------------------------------------------------------------------+
+|  Recording/RecordingSession.cs     Capture pump and encoder driver  |
+|  +--------------+----------------+----------------------------------+
+|  | Capture/     | Audio/         | Encoding/                        |
+|  | D3D11 and    | WasapiLoopback | MediaSinkWriter (H.264 + AAC)    |
+|  | WGC item     | (system + mic) | via Media Foundation             |
+|  | factory      | + ring mix     |                                  |
+|  +--------------+----------------+----------------------------------+
++--------------------------------------------------------------------+
+|  Settings.cs       JSON, source-generated, token-expanded filenames |
+|  Hotkeys/          Global Ctrl+Alt+R via RegisterHotKey             |
++--------------------------------------------------------------------+
+```
+
+### Components
+
+- **Capture.** Windows.Graphics.Capture API. Frames are delivered via Direct3D 11 surfaces; a staging texture is used to bring pixel data back to system memory for the encoder.
+- **Audio.** WASAPI loopback on the default render endpoint for system audio, and shared-mode capture on the default capture endpoint for microphone. Both streams are normalized to 16-bit stereo PCM at the device's native sample rate.
+- **Encoding.** Media Foundation Sink Writer mux H.264 video and AAC audio into an MP4 container. Color conversion (BGRA to NV12) is delegated to the sink writer's built-in color-converter MFT.
+- **User interface.** WinForms, with a `NotifyIcon` for tray integration and a topmost layered window for the countdown overlay.
+- **Persistence.** Settings are serialized via `System.Text.Json` source generators, keeping the application compatible with full IL trimming and Native AOT.
+
+### Design decisions
+
+- **WinForms instead of WPF.** WPF accounts for approximately 120 MB of additional weight in a self-contained build. WinForms produces an equivalent ~16 MB binary while keeping built-in `NotifyIcon`, `ToolTip`, `NumericUpDown`, and `FolderBrowserDialog` available without reimplementation.
+- **Hand-written COM interop.** Declaring five Direct3D 11 methods and ten Media Foundation methods via vtable function pointers is shorter than introducing Vortice or NAudio as dependencies, and avoids pulling in unused API surface.
+- **Source-generated JSON.** Eliminates reflection from the settings code path so the application can be fully trimmed.
+
+### Implementation notes
+
+- **Pause and resume.** During a pause, both video frames and audio packets are discarded. On resume, video timestamps are offset by the cumulative paused duration so the resulting MP4 has continuous timing with no gap and no double-speed segment. Audio remains in sync because the byte counter that drives audio timestamps does not advance during pause.
+- **Concurrent device access.** Windows.Graphics.Capture delivers frames on its own thread, and the Media Foundation encoder MFT may access the Direct3D 11 device context concurrently with the staging copy. `ID3D11Multithread::SetMultithreadProtected` is enabled on the device to serialize concurrent access.
+- **Microphone mixing.** When both system audio and microphone are captured, the system loopback drives the encoder's audio timeline. Microphone packets are buffered into a one-second ring and dequeued by the system-audio handler at write time, then mixed sample-by-sample (saturating addition) before the buffer is handed to the sink writer.
+- **Countdown overlay.** A full-screen click-through window (`WS_EX_TRANSPARENT`) uses magenta as both the background color and `Form.TransparencyKey`. The visible elements must be drawn with fully opaque colors; semi-transparent fills would alpha-blend with the magenta background and fail to be keyed out correctly.
 
 ## Project layout
 
 ```
-BareRecord.csproj           # net9.0-windows, x64, single-file + trim
-app.manifest                # PerMonitorV2 DPI awareness
-icon.ico                    # Multi-res app icon
+BareRecord.csproj           Project file (net9.0-windows, x64)
+app.manifest                PerMonitorV2 DPI awareness
+icon.ico                    Multi-resolution application icon
 
-Program.cs                  # Application.Run(new MainWindow())
-Settings.cs                 # JSON-persisted user settings + filename template
+Program.cs                  Application entry point
+Settings.cs                 JSON-persisted settings and filename templates
 
 UI/
-  MainWindow.cs             # State machine (Idle/Recording/Paused/Saved)
-  MainWindow.Tray.cs        # NotifyIcon, show/hide, balloon toasts
-  CountdownOverlay.cs       # Full-screen 3-2-1 overlay
+  MainWindow.cs             State machine (Idle / Recording / Paused / Saved)
+  MainWindow.Tray.cs        NotifyIcon, balloon notifications, show/hide
+  CountdownOverlay.cs       Full-screen 3-2-1 overlay
 
 Recording/
-  RecordingSession.cs       # Owns capture → encoder pipeline + pause logic
+  RecordingSession.cs       Owns the capture-to-encoder pipeline
 
 Capture/
-  CaptureItemFactory.cs     # IGraphicsCaptureItemInterop + picker
-  D3D11.cs                  # Hand-rolled D3D11 via vtable function pointers
-  MonitorEnumerator.cs      # GetPrimaryMonitor via MonitorFromPoint
-  DisplayDiagnostics.cs     # Troubleshooting dump (EnumDisplayMonitors,
-                            #   EnumDisplayDevices, DXGI EnumOutputs,
-                            #   QueryDisplayConfig)
+  CaptureItemFactory.cs     IGraphicsCaptureItemInterop, system picker
+  D3D11.cs                  Hand-rolled Direct3D 11 vtable interop
+  MonitorEnumerator.cs      Primary monitor lookup
+  DisplayDiagnostics.cs     Multi-API display dump for troubleshooting
 
 Audio/
-  WasapiLoopback.cs         # System loopback OR mic capture, normalised
-                            #   to 16-bit stereo PCM at device rate
-  PcmRingBuffer.cs          # Lock-protected byte ring for mic mixing
+  WasapiLoopback.cs         WASAPI loopback or capture, normalized PCM
+  PcmRingBuffer.cs          Lock-protected ring used during mic mixing
 
 Encoding/
-  Mf.cs                     # Media Foundation P/Invoke + vtable calls
-  MediaSinkWriter.cs        # H.264 + AAC → MP4 sink writer
+  Mf.cs                     Media Foundation P/Invoke and vtable calls
+  MediaSinkWriter.cs        H.264 + AAC sink writer
 
 Hotkeys/
-  GlobalHotkey.cs           # RegisterHotKey/UnregisterHotKey wrapper
+  GlobalHotkey.cs           RegisterHotKey wrapper
 
 Win32/
-  Native.cs                 # Minimal P/Invoke for WM_HOTKEY + MessageBox
+  Native.cs                 Minimal P/Invoke surface (WM_HOTKEY, MessageBox)
 ```
 
----
-
-## Settings schema
+## Settings reference
 
 `%LOCALAPPDATA%\BareRecord\settings.json`:
 
@@ -179,7 +174,7 @@ Win32/
   "Source": "Primary",
   "AudioSystem": true,
   "AudioMic": false,
-  "OutputFolder": "C:\\Users\\you\\Videos\\BareRecord",
+  "OutputFolder": "C:\\Users\\<user>\\Videos\\BareRecord",
   "Fps": 30,
   "ShowCursor": true,
   "Countdown": false,
@@ -191,26 +186,47 @@ Win32/
 }
 ```
 
-Filename template tokens: `{yyyy} {MM} {dd} {HH} {mm} {ss} {HHmmss} {source} {counter}` — anything else passes through literally. Invalid filename characters are replaced with `_` after substitution.
+### Filename template tokens
 
----
+| Token | Replacement |
+|---|---|
+| `{yyyy}` | Four-digit year |
+| `{MM}` | Two-digit month |
+| `{dd}` | Two-digit day |
+| `{HH}` | Two-digit hour, 24-hour |
+| `{mm}` | Two-digit minute |
+| `{ss}` | Two-digit second |
+| `{HHmmss}` | Concatenation of hour, minute, second |
+| `{source}` | Capture source (`Primary`, `Window`, `Region`) |
+| `{counter}` | Zero-padded sequence number, monotonically increasing per recording |
+
+Unrecognized tokens pass through literally. Characters that are invalid in Windows filenames are replaced with `_` after substitution.
 
 ## Troubleshooting
 
-Click **Troubleshooting** in the bottom-right of the window to dump display state to `%TEMP%\BareRecord-displays.log`. Useful when "my monitor isn't showing up". (Common cause: duplicate/mirror mode means only one of the duplicates is capturable.)
+The *Troubleshooting* button in the application window writes a diagnostic dump to `%TEMP%\BareRecord-displays.log`. The dump includes the output of `EnumDisplayMonitors`, `EnumDisplayDevices`, the DXGI adapter and output enumeration, and `QueryDisplayConfig`. This is the first thing to consult when a display is not detected.
 
-If audio doesn't work, check that your default render device runs at one of the AAC encoder's supported rates: `8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000` Hz. Almost every modern device does (typically 48000).
+A common cause of a missing display is duplicate or mirror display mode, in which only one of the duplicated outputs is independently capturable by Windows.Graphics.Capture.
 
-If recording fails to start with "Hotkey unavailable", another app is already holding `Ctrl+Alt+R`.
+If audio is not recorded, verify that the default render device runs at one of the AAC encoder's supported sample rates: 8000, 11025, 16000, 22050, 24000, 32000, 44100, or 48000 Hz. Most modern audio devices default to 48000 Hz.
 
----
+If the application reports *Hotkey unavailable*, another application is already registered for `Ctrl+Alt+R`. The hotkey is the only one currently used by BareRecord.
+
+## Continuous integration
+
+Every push to `main` and every pull request triggers a Windows build via the [CI workflow](.github/workflows/ci.yml), which restores, builds with `/warnaserror`, publishes a single-file binary, and uploads it as a workflow artifact.
+
+Pushing a tag of the form `vMAJOR.MINOR.PATCH` triggers the [release workflow](.github/workflows/release.yml), which builds the same binary, attaches it to a GitHub release, and auto-generates release notes from commits since the previous tag.
+
+To cut a release from the command line:
+
+```powershell
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The release workflow can also be invoked manually from the Actions tab.
 
 ## License
 
-[MIT](LICENSE).
-
----
-
-<div align="center">
-<sub>Built with <a href="https://learn.microsoft.com/en-us/uwp/api/windows.graphics.capture">Windows.Graphics.Capture</a>, <a href="https://learn.microsoft.com/en-us/windows/win32/medfound/microsoft-media-foundation-sdk">Media Foundation</a>, and a healthy aversion to bloat.</sub>
-</div>
+Released under the [MIT License](LICENSE).

@@ -24,13 +24,15 @@ internal sealed partial class CountdownOverlay : Form
     private readonly TaskCompletionSource _done = new();
     private System.Windows.Forms.Timer? _timer;
 
-    private CountdownOverlay()
+    private CountdownOverlay(Rectangle bounds)
     {
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar   = false;
         TopMost         = true;
         StartPosition   = FormStartPosition.Manual;
-        Bounds          = Screen.PrimaryScreen?.Bounds ?? new Rectangle(0, 0, 800, 600);
+        Bounds          = bounds.Width > 0 && bounds.Height > 0
+                            ? bounds
+                            : (Screen.PrimaryScreen?.Bounds ?? new Rectangle(0, 0, 800, 600));
         BackColor       = KeyColor;
         TransparencyKey = KeyColor;
         DoubleBuffered  = true;
@@ -38,9 +40,9 @@ internal sealed partial class CountdownOverlay : Form
     }
 
     /// <summary>Shows the overlay for 3 seconds (3, 2, 1) and then closes.</summary>
-    public static Task RunAsync()
+    public static Task RunAsync(Rectangle bounds)
     {
-        var ov = new CountdownOverlay();
+        var ov = new CountdownOverlay(bounds);
         ov.Show();
         ov.StartTimer();
         return ov._done.Task;

@@ -60,6 +60,18 @@ internal static class CaptureItemFactory
     }
 
     /// <summary>
+    /// Build a capture item from an arbitrary <c>HMONITOR</c>. Caller is
+    /// responsible for ensuring the handle came from EnumDisplayMonitors or
+    /// MonitorFromPoint — a stale/invalid handle yields an HRESULT failure.
+    /// </summary>
+    public static GraphicsCaptureItem ForMonitor(IntPtr hmonitor)
+    {
+        if (hmonitor == IntPtr.Zero)
+            throw new ArgumentException("Monitor handle is null.", nameof(hmonitor));
+        return CreateForMonitor(hmonitor);
+    }
+
+    /// <summary>
     /// IGraphicsCaptureItemInterop : IUnknown — vtable[4] = CreateForMonitor.
     /// </summary>
     private static unsafe GraphicsCaptureItem CreateForMonitor(IntPtr hmonitor)

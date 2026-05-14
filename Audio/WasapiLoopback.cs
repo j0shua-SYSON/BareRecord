@@ -84,6 +84,16 @@ internal sealed partial class WasapiLoopback : IDisposable
     public int Channels    => 2;
     public int BitsPerSample => 16;
 
+    /// <summary>
+    /// Linear peak amplitude (0..1) of the most recent packet. Updated from
+    /// the capture pump thread and read from the UI thread; on x64 a 32-bit
+    /// float read/write is atomic, and Volatile.Read/Write enforces ordering.
+    /// Read it as often as you like — the value reflects only the latest packet,
+    /// so the UI can apply its own decay / smoothing.
+    /// </summary>
+    public float Peak => Volatile.Read(ref _peak);
+    private float _peak;
+
     private Thread? _thread;
     private CancellationTokenSource? _cts;
     private readonly ManualResetEventSlim _ready = new(false);
@@ -277,9 +287,15 @@ internal sealed partial class WasapiLoopback : IDisposable
 
                     // Silence flag: emit zeros so AAC keeps a continuous timeline.
                     if ((flags & 0x2) != 0) // AUDCLNT_BUFFERFLAGS_SILENT
+                    {
                         Array.Clear(_outBuffer, 0, outBytes);
+                        Volatile.Write(ref _peak, 0f);
+                    }
                     else
+                    {
                         ConvertToStereoInt16((byte*)data, (int)frames, _outBuffer);
+                        Volatile.Write(ref _peak, ComputePeak(_outBuffer, outBytes));
+                    }
 
                     DataAvailable?.Invoke(_outBuffer, outBytes);
                 }
@@ -342,6 +358,24 @@ internal sealed partial class WasapiLoopback : IDisposable
         if (s >  32767) s =  32767;
         if (s < -32768) s = -32768;
         return (short)s;
+    }
+
+    private static unsafe float ComputePeak(byte[] pcm16, int byteCount)
+    {
+        int samples = byteCount / 2;
+        if (samples <= 0) return 0f;
+        int max = 0;
+        fixed (byte* p = pcm16)
+        {
+            short* s = (short*)p;
+            for (int i = 0; i < samples; i++)
+            {
+                int v = s[i];
+                if (v < 0) v = -v;
+                if (v > max) max = v;
+            }
+        }
+        return max / 32768f;
     }
 
     private unsafe void ParseFormat(IntPtr pwfx)

@@ -22,6 +22,12 @@ internal sealed partial class RecordingSession : IDisposable
     /// </summary>
     public event Action<string>? AbortRequested;
 
+    /// <summary>Latest packet peak for the system-audio source (0..1, 0 if not capturing).</summary>
+    public float SystemAudioPeak => _audio?.Peak ?? 0f;
+
+    /// <summary>Latest packet peak for the microphone source (0..1, 0 if not capturing).</summary>
+    public float MicPeak => _mic?.Peak ?? 0f;
+
     /// <summary>Threshold after which we give up on a chronically-failing capture.</summary>
     private const int PersistentErrorThreshold = 60;
 

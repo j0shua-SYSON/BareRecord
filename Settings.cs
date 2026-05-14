@@ -14,13 +14,23 @@ namespace BareRecord;
 /// </summary>
 internal sealed class Settings
 {
-    public string Source        { get; set; } = "Primary";   // Primary | Window
+    public string Source        { get; set; } = "Monitor";   // Monitor | Window
     public bool   AudioSystem   { get; set; } = true;
     public bool   AudioMic      { get; set; } = false;
     public string OutputFolder  { get; set; } = DefaultOutputFolder();
     public int    Fps           { get; set; } = 30;
     public bool   ShowCursor    { get; set; } = true;
     public bool   Countdown     { get; set; } = false;
+
+    /// <summary>
+    /// Zero-based index into the enumerated monitor list. Out-of-range values
+    /// fall back to the primary monitor at start time, so unplugging a
+    /// secondary display between sessions doesn't break recording.
+    /// </summary>
+    public int    MonitorIndex  { get; set; } = 0;
+
+    /// <summary>Highlight mouse clicks with an expanding ring while recording.</summary>
+    public bool   HighlightClicks { get; set; } = false;
 
     /// <summary>Auto-stop after N seconds; 0 disables the timer.</summary>
     public int    AutoStopSeconds { get; set; } = 0;

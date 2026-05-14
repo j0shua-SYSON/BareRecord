@@ -56,6 +56,9 @@ internal sealed partial class MainWindow
             ShowInTaskbar = false;
             Hide();
             if (_miShowHide != null) _miShowHide.Text = "Show";
+            // No UI to feed; release the audio endpoints rather than spend
+            // CPU on meters nobody can see.
+            StopIdleMeters();
         }
     }
 
@@ -70,6 +73,7 @@ internal sealed partial class MainWindow
         ShowInTaskbar = false;
         Hide();
         if (_miShowHide != null) _miShowHide.Text = "Show";
+        StopIdleMeters();
     }
 
     private void RestoreFromTray()
@@ -80,6 +84,7 @@ internal sealed partial class MainWindow
         Activate();
         BringToFront();
         if (_miShowHide != null) _miShowHide.Text = "Hide";
+        StartIdleMeters();
     }
 
     private void UpdateTrayState()
